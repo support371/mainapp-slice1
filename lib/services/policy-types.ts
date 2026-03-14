@@ -7,3 +7,10 @@ export type QueueClass =
   | "CYBERSECURITY_INCIDENT"
   | "CONSULTATION_SCHEDULING"
   | "ADMIN_ESCALATIONS";
+
+export type PolicyDecision = {
+  action: "ALLOW_AI" | "ESCALATE_HUMAN" | "RESTRICTED";
+  queue: QueueClass;
+  reason: string;
+  suggested_reply: string;
+};

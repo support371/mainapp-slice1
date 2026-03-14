@@ -1,15 +1,17 @@
-import type { Metadata } from "next";
-import React from "react";
+import type { ReactNode } from "react";
+import "./globals.css";
+import { AppNav } from "@/components/layouts/AppNav";
 
-export const metadata: Metadata = {
-  title: "Mainapp Slice 1",
-  description: "Authenticated dashboard and support-session scaffold",
+export const metadata = {
+  title: "GEM Mainapp",
+  description: "Authenticated portal, AI concierge support, and escalation routing.",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
-      <body style={{ margin: 0, fontFamily: "Inter, Arial, sans-serif", background: "#0b1220", color: "#e5e7eb" }}>
+      <body>
+        <AppNav />
         {children}
       </body>
     </html>

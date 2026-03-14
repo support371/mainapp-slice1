@@ -1,46 +1,60 @@
-import type { QueueClass } from "@/lib/services/policy-types";
+import type { PolicyDecision } from "@/lib/services/policy-types";
 
-export type PolicyDecision = {
-  action: "ALLOW_AI" | "ESCALATE_HUMAN" | "RESTRICTED";
-  queueClass: QueueClass;
-  reason: string;
-  slaClass: "P4" | "P3" | "P2" | "P1";
+type DecideArgs = {
+  content: string;
+  membership_tier: string;
 };
 
-const INCIDENT_PATTERNS = ["breach", "compromise", "hack", "stolen", "wallet", "cyber", "incident"];
-const BILLING_PATTERNS = ["refund", "invoice", "billing", "charge", "payment"];
-const VIP_PATTERNS = ["vip", "priority"];
+export function decideSupportPolicy({ content, membership_tier }: DecideArgs): PolicyDecision {
+  const text = content.toLowerCase();
 
-export function classifySupportIntent(text: string, membershipTier: string): PolicyDecision {
-  const lower = text.toLowerCase();
-  if (INCIDENT_PATTERNS.some((word) => lower.includes(word))) {
+  if (
+    text.includes("breach") ||
+    text.includes("incident") ||
+    text.includes("compromise") ||
+    text.includes("stolen") ||
+    text.includes("hack") ||
+    text.includes("cyber") ||
+    text.includes("wallet")
+  ) {
     return {
       action: "ESCALATE_HUMAN",
-      queueClass: "CYBERSECURITY_INCIDENT",
-      reason: "security_incident_detected",
-      slaClass: "P1",
+      queue: "CYBERSECURITY_INCIDENT",
+      reason: "Security-sensitive content detected.",
+      suggested_reply: "This issue requires controlled human handling. We are escalating it to the security team now.",
     };
   }
-  if (BILLING_PATTERNS.some((word) => lower.includes(word))) {
+
+  if (
+    text.includes("billing") ||
+    text.includes("invoice") ||
+    text.includes("refund") ||
+    text.includes("charge") ||
+    text.includes("payment")
+  ) {
     return {
       action: "ESCALATE_HUMAN",
-      queueClass: "BILLING_ACCOUNTS",
-      reason: "billing_review_required",
-      slaClass: "P2",
+      queue: "BILLING_ACCOUNTS",
+      reason: "Billing or account handling requires human review.",
+      suggested_reply: "Your billing-related issue is being routed to the accounts team.",
     };
   }
-  if (membershipTier === "VIP" || VIP_PATTERNS.some((word) => lower.includes(word))) {
+
+  if (membership_tier === "VIP" || text.includes("vip") || text.includes("priority")) {
     return {
       action: "ALLOW_AI",
-      queueClass: "VIP_CONCIERGE",
-      reason: "vip_priority_route",
-      slaClass: "P2",
+      queue: "VIP_CONCIERGE",
+      reason: "VIP session with AI-first handling.",
+      suggested_reply: "I can help immediately and will preserve your priority context if escalation is needed.",
     };
   }
+
   return {
     action: "ALLOW_AI",
-    queueClass: "GENERAL_MEMBER_SUPPORT",
-    reason: "standard_ai_first_flow",
-    slaClass: "P4",
+    queue: "GENERAL_MEMBER_SUPPORT",
+    reason: "Standard support flow.",
+    suggested_reply: "I have your request and can guide you through the next steps.",
   };
 }
+
+export { decideSupportPolicy as classifySupportIntent };

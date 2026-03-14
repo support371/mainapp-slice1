@@ -2,9 +2,11 @@ import {
   createSupportSessionSchema,
   recordConsentSchema,
   supportMessageSchema,
+  escalationSchema,
   type CreateSupportSessionInput,
   type RecordConsentInput,
   type SupportMessageInput,
+  type EscalationInput,
 } from "@/lib/contracts/support";
 import { db } from "@/lib/services/fake-db";
 import { makeId } from "@/lib/utils/id";
@@ -46,9 +48,26 @@ export function appendMessage(input: SupportMessageInput) {
   const current = db.messages.get(parsed.session_id) ?? [];
   current.push(message);
   db.messages.set(parsed.session_id, current);
-  session.state = session.state === "CONSENT_ACCEPTED" ? "INTENT_CLASSIFIED" : session.state;
+  session.state = "INTENT_CLASSIFIED";
   db.sessions.set(parsed.session_id, session);
   return { session, message };
+}
+
+export function createEscalation(input: EscalationInput) {
+  const parsed = escalationSchema.parse(input);
+  const session = db.sessions.get(parsed.session_id);
+  if (!session) throw new Error("Session not found.");
+  session.state = "HUMAN_ESCALATION_PENDING";
+  db.sessions.set(parsed.session_id, session);
+  const escalation = {
+    escalation_id: makeId("esc"),
+    ...parsed,
+    created_at: new Date().toISOString(),
+  };
+  const current = db.escalations.get(parsed.session_id) ?? [];
+  current.push(escalation);
+  db.escalations.set(parsed.session_id, current);
+  return escalation;
 }
 
 export function getSession(sessionId: string) {

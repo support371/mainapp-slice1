@@ -12,19 +12,7 @@ export const approvalStateSchema = z.enum([
 ]);
 
 export const membershipTierSchema = z.enum(["MEMBER", "PAID", "VIP", "ADMIN"]);
-export const supportSessionStateSchema = z.enum([
-  "SESSION_INITIATED",
-  "CONSENT_PENDING",
-  "CONSENT_ACCEPTED",
-  "INTENT_CLASSIFIED",
-  "AI_ACTIVE",
-  "HUMAN_ESCALATION_PENDING",
-  "HUMAN_ASSIGNED",
-  "BOOKING_CREATED",
-  "TICKET_CREATED",
-  "RESOLVED",
-  "CLOSED",
-]);
+
 export const queueClassSchema = z.enum([
   "GENERAL_MEMBER_SUPPORT",
   "PREMIUM_MEMBER_SUPPORT",
@@ -45,9 +33,9 @@ export const bridgeTokenPayloadSchema = z.object({
   role: z.string().min(1),
   redirect_target: z.string().min(1),
   profile_completion_state: z.enum(["COMPLETE", "PARTIAL"]),
-  issued_at: z.string().datetime(),
-  expires_at: z.string().datetime(),
-  session_nonce: z.string().min(10),
+  issued_at: z.string(),
+  expires_at: z.string(),
+  session_nonce: z.string().min(8),
 });
 
 export const createSupportSessionSchema = z.object({
@@ -63,35 +51,27 @@ export const createSupportSessionSchema = z.object({
 
 export const supportMessageSchema = z.object({
   session_id: z.string().min(1),
-  message_id: z.string().min(1).optional(),
+  message_id: z.string().optional(),
   role: z.enum(["user", "assistant", "system", "agent"]),
   content: z.string().min(1),
-  created_at: z.string().datetime().optional(),
+  created_at: z.string().optional(),
 });
 
 export const recordConsentSchema = z.object({
   session_id: z.string().min(1),
   granted: z.boolean(),
-  captured_at: z.string().datetime().optional(),
+  captured_at: z.string().optional(),
 });
 
-export const escalationRequestSchema = z.object({
+export const escalationSchema = z.object({
   session_id: z.string().min(1),
-  user_id: z.string().min(1),
-  membership_tier: membershipTierSchema,
-  queue_class: queueClassSchema,
-  intent_classification: z.string().min(1),
   escalation_reason: z.string().min(1),
-  urgency: z.enum(["LOW", "MEDIUM", "HIGH", "CRITICAL"]),
-  sla_class: z.enum(["P4", "P3", "P2", "P1"]),
-  transcript_summary: z.string().min(1),
-  ticket_id: z.string().nullable(),
-  booking_id: z.string().nullable(),
-  artifact_links: z.array(z.string().url()).default([]),
+  urgency: z.enum(["LOW", "MEDIUM", "HIGH", "CRITICAL"]).default("MEDIUM"),
 });
 
 export type BridgeTokenPayload = z.infer<typeof bridgeTokenPayloadSchema>;
+export type BridgeConsumeInput = BridgeTokenPayload;
 export type CreateSupportSessionInput = z.infer<typeof createSupportSessionSchema>;
 export type SupportMessageInput = z.infer<typeof supportMessageSchema>;
 export type RecordConsentInput = z.infer<typeof recordConsentSchema>;
-export type EscalationRequest = z.infer<typeof escalationRequestSchema>;
+export type EscalationInput = z.infer<typeof escalationSchema>;

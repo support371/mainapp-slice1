@@ -1,39 +1,24 @@
-import type { EscalationRequest, SupportMessageInput } from "@/lib/contracts/support";
-
-export type StoredSession = {
-  session_id: string;
-  user_id: string;
-  membership_tier: string;
-  role: string;
-  entry_route: string;
-  entry_trigger: string;
-  consent_status: "PENDING" | "ACCEPTED" | "DECLINED";
-  queue_candidate: string;
-  support_mode: string;
-  state: string;
-  created_at: string;
-  profile_completion_state?: string;
-};
+import type { BridgeTokenPayload } from "@/lib/contracts/support";
 
 const globalStore = globalThis as typeof globalThis & {
   __mainappStore?: {
-    bridgeNonces: Set<string>;
-    sessions: Map<string, StoredSession>;
-    messages: Map<string, SupportMessageInput[]>;
-    escalations: EscalationRequest[];
-    tickets: unknown[];
-    bookings: unknown[];
+    users: Map<string, BridgeTokenPayload>;
+    sessions: Map<string, any>;
+    messages: Map<string, any[]>;
+    escalations: Map<string, any[]>;
+    tickets: Map<string, any[]>;
+    bookings: Map<string, any[]>;
   };
 };
 
 if (!globalStore.__mainappStore) {
   globalStore.__mainappStore = {
-    bridgeNonces: new Set(),
+    users: new Map(),
     sessions: new Map(),
     messages: new Map(),
-    escalations: [],
-    tickets: [],
-    bookings: [],
+    escalations: new Map(),
+    tickets: new Map(),
+    bookings: new Map(),
   };
 }
 
